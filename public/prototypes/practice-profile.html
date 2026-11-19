@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Practice Profile Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#EEF0F0;--paper:#fff;--line:#E6EAEA;--border:#E0E4E4;--well:#F5F5F5;--soft:#FAFAFA;
+  --ink:#1A1F1E;--text:rgba(0,0,0,.78);--muted:#6B7271;--faint:#9AA2A1;
+  --primary:#2C7A7B;--primary-dark:#1F5D5E;--accent:#E8F2F2;--brand:#5CE1E6;--brand-ink:#1E4E50;--brand-soft:#E9FBFC;
+  --error:#D32F2F;--error-soft:#FDECEA;--ok:#2E7D32;--ok-soft:#EAF6EC;--warn:#B26A00;--warn-soft:#FFF3E3;--info:#0277BD;--info-soft:#E6F4FB;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Poppins,system-ui,sans-serif;background:var(--canvas);color:var(--ink);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{width:18px;height:18px;flex-shrink:0}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* Prototype bar (not part of the design) */
+.proto{background:#16201F;color:#fff;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 16px;font-size:12px}
+.proto b{font-weight:600;font-size:13px}
+.proto .lbl{color:#9FB0AE}
+.proto button{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:999px;padding:4px 11px;font-size:12px}
+.proto button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+.proto .sp{flex:1}
+
+/* App shell (matches the Aqlios CRM practice shell) */
+.app{padding:14px;max-width:1500px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:28px;padding:10px 12px 10px 24px;margin-bottom:14px}
+.crumbs{font-size:15px;color:var(--muted);white-space:nowrap;display:flex;gap:10px;align-items:center}
+.crumbs b{color:var(--ink);font-weight:600}
+.search{flex:1;max-width:560px;margin-left:auto;display:flex;align-items:center;gap:10px;background:var(--well);border-radius:999px;padding:11px 16px;color:var(--faint);font-size:13px}
+.search kbd{margin-left:auto;font:inherit;font-size:11px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:0 6px}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;flex-shrink:0}
+.who{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:999px;padding:4px 16px 4px 4px;flex-shrink:0}
+.av{width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px;flex-shrink:0}
+.who .n{font-weight:500;font-size:14px;line-height:1.2}
+.who .p{font-size:11px;color:var(--muted)}
+.who .p i{font-style:normal;background:var(--accent);color:var(--primary-dark);border-radius:4px;padding:0 5px;margin-right:6px}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+.side{background:#fff;border:1px solid var(--border);border-radius:28px;padding:16px 12px}
+.logo{display:flex;align-items:center;gap:8px;padding:2px 8px 10px;font-weight:700;font-size:22px;letter-spacing:-.5px}
+.logo small{font-weight:500;font-size:12px;line-height:1.15;color:var(--ink);border-left:1px solid var(--border);padding-left:8px;letter-spacing:0}
+.side .sec{font-size:12px;color:var(--muted);padding:12px 10px 6px}
+.side a{display:flex;gap:12px;align-items:center;padding:8px 12px;border-radius:999px;color:var(--ink);text-decoration:none;font-size:14px;border:1.5px solid transparent}
+.side a.on{border-color:var(--primary);font-weight:600}
+.side hr{border:0;border-top:1px solid var(--line);margin:10px 4px}
+.side .me{display:flex;gap:10px;align-items:center;background:var(--accent);border-radius:16px;padding:10px;margin-top:10px}
+.side .me small{display:block;color:var(--muted);font-size:12px}
+.panel{background:#F7F8F8;border:1px solid var(--border);border-radius:28px;padding:22px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start;min-width:0}
+.setnav{background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px;display:grid;gap:2px}
+.setnav a{display:block;padding:10px 16px;border-radius:999px;color:var(--muted);text-decoration:none;font-size:14px;border:1px solid transparent}
+.setnav a.on{background:var(--soft);border-color:var(--border);color:var(--ink);font-weight:600}
+.content{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px 24px 30px;min-width:0}
+
+/* Practice Profile */
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.head h2{margin:0;font-size:22px;font-weight:700}
+.head p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.head .acts{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 24px;border-radius:999px;border:1px solid #1E1E1E;background:#fff;font-size:15px;font-weight:500;white-space:nowrap}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.sm{height:34px;padding:0 16px;font-size:13px}
+.btn.outline{border-color:var(--primary);color:var(--primary)}
+.btn.ghost{border-color:transparent;color:var(--primary);padding:0 6px;height:auto}
+.btn:disabled{background:var(--well);border-color:var(--line);color:var(--faint);cursor:not-allowed}
+.meta{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:14px 0 18px;padding:10px 14px;border-radius:12px;background:var(--brand-soft);color:var(--brand-ink);font-size:13px}
+.meta svg{width:16px;height:16px}
+.meta > span:first-of-type{flex:1;min-width:220px}
+.meta .dirty{margin-left:auto;font-weight:600;color:var(--warn)}
+.ptabs{display:inline-flex;flex-wrap:wrap;gap:4px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;margin-bottom:18px}
+.ptabs button{border:0;background:none;border-radius:999px;padding:9px 18px;font-size:14px;color:var(--muted);display:inline-flex;gap:8px;align-items:center;position:relative}
+.ptabs button[aria-selected=true]{background:var(--brand);color:var(--brand-ink);font-weight:600}
+.ptabs .dot{width:8px;height:8px;border-radius:50%;background:var(--error)}
+.stack{display:grid;gap:18px}
+.card{background:#fff;border:1px solid var(--border);border-radius:20px;min-width:0}
+.stack > *{min-width:0}
+.card.bad{border-color:var(--error)}
+.card > .ch{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.card > .ch h3{margin:0;font-size:18px;font-weight:700;flex:1;display:flex;align-items:center;gap:8px}
+.card > .ch h3 small{font-weight:400;font-size:13px;color:var(--muted)}
+.card > .ch h3 small.mand{color:var(--error)}
+.card > .ch .chev{transition:transform .15s}
+.card.closed > .ch{border-bottom:0}
+.card.closed > .ch .chev{transform:rotate(180deg)}
+.card.closed > .cb{display:none}
+.card > .cb{padding:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.full{grid-column:1/-1}
+.help{font-size:13px;color:var(--muted);margin:0 0 12px}
+
+/* MUI-style outlined fields with the label on the border */
+.f{position:relative;display:flex;flex-direction:column}
+.f > label{position:absolute;top:-9px;left:12px;background:#fff;padding:0 5px;font-size:12px;color:var(--muted);line-height:18px;z-index:1;pointer-events:none}
+.f > label .req{color:var(--error)}
+.f input,.f select,.f textarea{height:52px;border:1px solid rgba(0,0,0,.23);border-radius:12px;padding:0 14px;background:#fff;width:100%;font-size:14px}
+.f textarea{height:auto;min-height:120px;padding:14px;resize:vertical;background:var(--well);border-color:transparent}
+.f input:hover,.f select:hover{border-color:rgba(0,0,0,.6)}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.f input:disabled,.f select:disabled,.f textarea:disabled{background:var(--well);color:#9CA3AF;border-color:rgba(0,0,0,.12)}
+.f .msg{font-size:12px;margin:4px 14px 0;color:var(--muted)}
+.f.bad > label{color:var(--error)}
+.f.bad input,.f.bad select,.f.bad textarea{border-color:var(--error)}
+.f.bad .msg{color:var(--error)}
+.f .counter{text-align:right}
+.phone{display:flex;align-items:center;border:1px solid rgba(0,0,0,.23);border-radius:12px;height:52px;padding-left:12px;background:#fff}
+.phone:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.f.bad .phone{border-color:var(--error)}
+.phone span{font-size:14px;padding-right:8px;border-right:1px solid var(--line);white-space:nowrap}
+.phone input{border:0!important;box-shadow:none!important;height:48px}
+.phone.dis{background:var(--well);color:#9CA3AF}
+
+.logo-box{display:flex;align-items:center;gap:16px;border:1.5px dashed #C9D0D0;border-radius:18px;padding:16px 20px;flex-wrap:wrap}
+.logo-thumb{width:80px;height:80px;border-radius:14px;border:1px solid var(--line);display:grid;place-items:center;background:linear-gradient(135deg,#E8F2F2,#fff);color:var(--primary);font-weight:700;font-size:20px}
+.saved{display:inline-flex;align-items:center;gap:4px;color:var(--ok);font-size:13px;font-weight:500}
+.person{background:var(--soft);border:1px solid var(--line);border-radius:16px}
+.person .ph{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:600}
+.person .ph .grow{flex:1}
+.person .pb{padding:6px 16px 18px}
+.person .pb .f > label{background:var(--soft)}
+.person .pb .f > label{background:linear-gradient(to bottom,var(--soft) 50%,#fff 50%)}
+.del{border:0;background:none;color:var(--error);width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+.del:hover{background:var(--error-soft)}
+.hours{display:grid;gap:10px}
+.day{display:grid;grid-template-columns:120px 52px 70px auto;align-items:center;gap:10px}
+.day b{font-weight:500}
+.day .times{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.day .times input{width:110px;height:42px;border:1px solid rgba(0,0,0,.23);border-radius:12px;padding:0 12px}
+.day .times em{font-style:normal;color:var(--primary);font-weight:500}
+.day .err{grid-column:1/-1;color:var(--error);font-size:12px;margin-left:182px}
+.sw{position:relative;width:46px;height:26px;display:inline-block}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;background:#E9E9EA;border-radius:13px;transition:.15s;cursor:pointer}
+.sw span:before{content:'';position:absolute;width:22px;height:22px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.15s}
+.sw input:checked + span{background:var(--primary)}
+.sw input:checked + span:before{transform:translateX(20px)}
+.sw input:focus-visible + span{outline:2px solid var(--primary);outline-offset:2px}
+.sw input:disabled + span{opacity:.5;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:52px;border:1px solid rgba(0,0,0,.23);border-radius:12px;padding:8px 12px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--primary-dark);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px}
+.chip button{border:0;background:rgba(44,122,123,.15);border-radius:50%;width:18px;height:18px;display:grid;place-items:center;padding:0;color:var(--primary-dark)}
+.chip button svg{width:12px;height:12px}
+.chips select{border:0;flex:1;min-width:140px;height:34px;background:transparent}
+.atype{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.atype label{flex:1;display:flex;gap:10px;align-items:center;cursor:pointer}
+.atype input{accent-color:var(--primary);width:18px;height:18px}
+.def{font-size:12px;border-radius:999px;padding:3px 12px;border:1px solid var(--line);background:#fff;color:var(--muted)}
+.def.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;font-size:13px}
+.alert.warn{background:var(--warn-soft);color:#7A4300}
+.alert.info{background:var(--info-soft);color:#01579B}
+.sub-card{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:14px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ro-banner{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--well);color:var(--muted);font-size:13px;margin-bottom:16px}
+.divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+.divider:before,.divider:after{content:'';flex:1;border-top:1px solid var(--line)}
+.toast{position:fixed;left:18px;bottom:18px;z-index:90;color:#fff;background:#2E7D32;border-radius:10px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;max-width:calc(100vw - 36px)}
+.toast.err{background:#C62828}
+.notes{margin-top:22px;font-size:12.5px;color:var(--muted);border:1.5px dashed #A9CBCB;background:#FBFDFD;border-radius:14px;padding:12px 16px}
+.notes b{color:var(--ink)}
+.notes ul{margin:6px 0 0;padding-left:18px}
+
+@media (max-width:1100px){.panel{grid-template-columns:1fr}.setnav{display:flex;flex-wrap:wrap}}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}.side{display:none}.search{display:none}.crumbs{flex:1;overflow:hidden;font-size:13px}
+  .grid,.row3{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  .chips select{min-width:0}.atype{flex-wrap:wrap}
+  .app{padding:8px}.top{padding:8px 8px 8px 14px;border-radius:20px}.who .n,.who .p{display:none}.who{padding:3px}
+  .panel{padding:12px;border-radius:20px}.content{padding:16px 14px 22px}
+  .head .acts{width:100%}.head .acts .btn{flex:1}
+  .ptabs{display:flex}.ptabs button{flex:1 1 45%;justify-content:center;padding:8px 10px;font-size:13px}
+  .day{grid-template-columns:96px 52px 1fr}.day .times{grid-column:1/-1}.day .err{margin-left:0}
+  .card > .ch{padding:14px}.card > .cb{padding:16px 14px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* Icons */
+const I = {
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 15 6-6 6 6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>',
+  build:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-5h6v5M8 8h2M14 8h2M8 12h2M14 12h2"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M14 10h4M14 13h4"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4 10-10"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17v.5"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  cfg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+  set:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>',
+};
+
+/* Data: Ashford Medical Centre as onboarded (local demo build). Blank optional fields are filled with fictional sample values. */
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const week = () => DAYS.map((d, i) => ({ day: d, open: i > 0 && i < 6, from: '08:00', to: '18:30' }));
+const ONBOARDED = {
+  name: 'Ashford Medical Centre', manager: 'Nadia Holloway', type: 'Public', pcn: 'Eastside PCN', phone: '113 652 4460',
+  email: 'reception.ashford@nhs.demo', website: 'ashfordmedicalcentre.demo',
+  description: 'NHS GP practice serving around 9,400 patients. Routine and urgent appointments, chronic disease clinics, child immunisations and home visits for housebound patients.',
+  address1: '45 Clifton Road', address2: '', postcode: 'LS13 1HQ',
+  pocs: [
+    { name: 'Nadia Holloway', phone: '7700 900301', email: 'nadia.holloway@nhs.demo', designation: 'Practice Manager', description: 'First contact for contracts, staffing and complaints.' },
+    { name: 'Dr Hannah Whitcombe', phone: '7700 900302', email: 'hannah.whitcombe@nhs.demo', designation: 'Clinical Lead', description: '' },
+  ],
+  hours: week(),
+  rotaGroups: ['Primary Rota Group'], linked: [], startDate: '2026-10-27', ongoing: true,
+  workforce: [{ type: 'GP', freq: 'Daily', hours: '8' }],
+  atypes: { 'Face To Face Surgery': true, 'Telephone Or Audio': false, 'Face To Face Home Visit': false, 'Written Including Online': false, 'Admin Work': true },
+  defaultType: 'Face To Face Surgery',
+  slots: [{ role: 'Clinician', type: 'Face To Face Surgery', mins: '30' }],
+  urgent: 'Both', routine: 'Both', capacity: week(), extra: 'Signposting to Pharmacy',
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+let saved = clone(ONBOARDED), v = clone(ONBOARDED);
+const U = { tab: 'details', role: 'pm', errors: {}, touched: {}, closed: {}, toast: null, lastSaved: null };
+try { const t = new URLSearchParams(location.search).get('tab'); if (['details', 'contacts', 'hours', 'config'].includes(t)) U.tab = t; } catch (e) {}
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ro = () => U.role !== 'pm';
+const dirty = () => JSON.stringify(v) !== JSON.stringify(saved);
+
+/* Validation: same rules and messages as Onboard New Practice */
+const TAB_OF = k => k.startsWith('poc') ? 'contacts' : k.startsWith('hours') ? 'hours' : ['startDate', 'atypes', 'slots', 'workforce', 'cap'].some(p => k.startsWith(p)) ? 'config' : 'details';
+function validate() {
+  const e = {};
+  const req = (k, val, msg) => { if (!String(val || '').trim()) e[k] = msg; };
+  req('name', v.name, 'Practice name is required');
+  req('pcn', v.pcn, 'PCN name is required');
+  if (!v.phone.trim()) e.phone = 'Phone number is required'; else if (!/^\d{10,11}$/.test(v.phone.replace(/\s/g, ''))) e.phone = 'Enter a valid UK phone number';
+  if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) e.email = 'Enter a valid email';
+  if (v.description.length > 500) e.description = 'Description must be 500 characters or fewer';
+  req('address1', v.address1, 'Address line 1 is required');
+  if (!v.postcode.trim()) e.postcode = 'Postcode is required'; else if (!/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(v.postcode.trim())) e.postcode = 'Enter a valid UK postcode';
+  v.pocs.forEach((p, i) => {
+    req(`poc${i}.name`, p.name, 'Name is required');
+    if (!p.phone.trim()) e[`poc${i}.phone`] = 'Contact number is required'; else if (!/^\d{10,11}$/.test(p.phone.replace(/\s/g, ''))) e[`poc${i}.phone`] = 'Enter a valid UK phone number';
+    if (!p.email.trim()) e[`poc${i}.email`] = 'Email is required'; else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) e[`poc${i}.email`] = 'Enter a valid email';
+    req(`poc${i}.designation`, p.designation, 'Designation is required');
+  });
+  v.hours.forEach((h, i) => { if (h.open && h.to <= h.from) e[`hours${i}`] = 'Closing time must be after opening time'; });
+  v.capacity.forEach((h, i) => { if (h.open && h.to <= h.from) e[`cap${i}`] = 'Closing time must be after opening time'; });
+  if (!v.startDate) e.startDate = 'Start date is required';
+  if (!Object.values(v.atypes).some(Boolean)) e.atypes = 'Enable at least one appointment type';
+  else if (!v.atypes[v.defaultType]) e.atypes = 'Set one enabled appointment type as default';
+  v.slots.forEach((s, i) => { if (!s.mins || Number(s.mins) <= 0) e[`slots${i}`] = 'Duration is required'; });
+  v.workforce.forEach((w, i) => { if (!w.hours || Number(w.hours) <= 0) e[`workforce${i}`] = 'Hours are required'; });
+  return e;
+}
+const shown = k => (U.touched[k] || U.submitted) ? U.errors[k] : '';
+const tabHasError = t => U.submitted && Object.keys(U.errors).some(k => TAB_OF(k) === t);
+
+/* Field helpers */
+function input(key, label, val, { req, ph = '', type = 'text', dis, full, help, path } = {}) {
+  const err = shown(key);
+  return `<div class="f ${err ? 'bad' : ''} ${full ? 'full' : ''}" ${help ? `data-helptext="${esc(help)}"` : ''}><label for="${key}">${label}${req ? ' <span class="req">*</span>' : ''}</label><input id="${key}" type="${type}" value="${esc(val)}" placeholder="${esc(ph)}" data-path="${path || key}" ${dis || ro() ? 'disabled' : ''} aria-invalid="${!!err}">${err ? `<span class="msg">${esc(err)}</span>` : help ? `<span class="msg">${help}</span>` : ''}</div>`;
+}
+function phone(key, label, val, path, req = true) {
+  const err = shown(key);
+  return `<div class="f ${err ? 'bad' : ''}"><label for="${key}">${label}${req ? ' <span class="req">*</span>' : ''}</label><div class="phone ${ro() ? 'dis' : ''}"><span>🇬🇧 +44</span><input id="${key}" value="${esc(val)}" placeholder="1234 567890" inputmode="tel" data-path="${path}" ${ro() ? 'disabled' : ''}></div>${err ? `<span class="msg">${esc(err)}</span>` : ''}</div>`;
+}
+function textarea(key, label, val, path, ph) {
+  const err = shown(key);
+  return `<div class="f full ${err ? 'bad' : ''}"><label for="${key}">${label}</label><textarea id="${key}" maxlength="600" placeholder="${esc(ph)}" data-path="${path}" data-count="${key}-c" ${ro() ? 'disabled' : ''}>${esc(val)}</textarea><span class="msg counter" id="${key}-c">${err ? esc(err) : `${val.length}/500 characters`}</span></div>`;
+}
+function select(key, label, val, opts, path, { req, dis } = {}) {
+  return `<div class="f"><label for="${key}">${label}${req ? ' <span class="req">*</span>' : ''}</label><select id="${key}" data-path="${path}" ${dis || ro() ? 'disabled' : ''}>${opts.map(o => `<option ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`;
+}
+function card(id, icon, title, body, { tag = '', extra = '', bad = false } = {}) {
+  const closed = U.closed[id] && !bad;
+  return `<section class="card ${closed ? 'closed' : ''} ${bad ? 'bad' : ''}"><div class="ch" data-toggle="${id}" role="button" tabindex="0" aria-expanded="${!closed}">${icon ? `<span style="color:var(--ink)">${I[icon]}</span>` : ''}<h3>${title}${tag}</h3>${extra}<span class="chev">${I.up}</span></div><div class="cb">${body}</div></section>`;
+}
+const errIn = prefix => U.submitted && Object.keys(U.errors).some(k => k.startsWith(prefix));
+function hoursRows(list, prefix) {
+  return `<div class="hours">${list.map((h, i) => `<div class="day"><b>${h.day}</b><label class="sw"><input type="checkbox" ${h.open ? 'checked' : ''} data-path="${prefix}.${i}.open" ${ro() ? 'disabled' : ''} aria-label="${h.day} open"><span></span></label><span style="color:${h.open ? 'var(--ink)' : 'var(--muted)'}">${h.open ? 'Open' : 'Closed'}</span>${h.open ? `<div class="times"><input type="time" value="${h.from}" data-path="${prefix}.${i}.from" aria-label="${h.day} opening time" ${ro() ? 'disabled' : ''}><em>to</em><input type="time" value="${h.to}" data-path="${prefix}.${i}.to" aria-label="${h.day} closing time" ${ro() ? 'disabled' : ''}></div>` : '<span></span>'}${shown((prefix === 'hours' ? 'hours' : 'cap') + i) ? `<span class="err">${esc(U.errors[(prefix === 'hours' ? 'hours' : 'cap') + i])}</span>` : ''}</div>`).join('')}</div>`;
+}
+
+/* Tabs */
+function tabDetails() {
+  return `<div class="stack">
+  <div class="logo-box"><div class="logo-thumb">AMC</div><div style="flex:1;min-width:180px"><b style="font-weight:600">Practice logo</b><div class="saved">${I.check} Saved</div><div style="color:var(--muted);font-size:12px">JPEG or PNG up to 10MB</div></div>${ro() ? '' : `<button class="btn sm" data-act="logo">Change Logo</button><button class="del" aria-label="Delete logo" data-act="logo">${I.trash}</button>`}</div>
+  ${card('pd', 'build', 'Practice Details', `<div class="grid">
+    ${input('name', 'Practice Name', v.name, { req: true, ph: 'Enter practice name (must be unique)' })}
+    ${input('manager', 'Practice Manager', v.manager, { dis: true, help: `${I.lock.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Assigned by the Aqlios admin` })}
+    ${select('type', 'Practice Type', 'Public', ['Public'], 'type', { req: true, dis: true })}
+    ${input('pcn', 'PCN Name', v.pcn, { req: true, ph: 'PCN Name', full: false })}
+    ${phone('phone', 'Phone number', v.phone, 'phone')}
+    ${input('email', 'Email Address', v.email, { ph: 'Email Address', type: 'email' })}
+    ${input('website', 'Website', v.website, { ph: 'test.co.uk', full: true })}
+    ${textarea('description', 'Practice Description', v.description, 'description', 'Brief description of your practice and services...')}
+  </div>`, { bad: errIn('name') || errIn('pcn') || errIn('phone') || errIn('email') || errIn('description') })}
+  ${card('ad', 'pin', 'Address', `<div class="grid">
+    ${input('address1', 'Address Line 1', v.address1, { req: true, ph: 'Enter Address Line 1', full: true })}
+    ${input('address2', 'Address Line 2', v.address2, { ph: 'Enter Address Line 2 (optional)', full: true })}
+    ${input('postcode', 'Postcode', v.postcode, { req: true, ph: 'Enter Postcode (e.g., SW1A 2HQ)' })}
+  </div>`, { bad: errIn('address1') || errIn('postcode') })}
+  </div>`;
+}
+function tabContacts() {
+  const people = v.pocs.map((p, i) => `<div class="person"><div class="ph"><span style="color:var(--primary)">${I.user}</span><span class="grow">Person ${i + 1}</span>${ro() ? '' : `<button class="del" data-act="delPoc" data-i="${i}" aria-label="Delete Person ${i + 1}">${I.trash}</button>`}</div><div class="pb"><div class="grid" style="margin-top:8px">
+    ${input(`poc${i}.name`, 'Name', p.name, { req: true, path: `pocs.${i}.name` })}
+    ${phone(`poc${i}.phone`, 'Contact No', p.phone, `pocs.${i}.phone`)}
+    ${input(`poc${i}.email`, 'Email', p.email, { req: true, type: 'email', path: `pocs.${i}.email` })}
+    ${input(`poc${i}.designation`, 'Designation', p.designation, { req: true, path: `pocs.${i}.designation` })}
+    ${textarea(`poc${i}.description`, 'Description', p.description, `pocs.${i}.description`, 'Notes about this contact (optional)')}
+  </div></div></div>`).join('');
+  return card('poc', 'card', 'Point of contact', `<div class="stack">${people || '<p class="help" style="margin:0">No contacts added yet.</p>'}</div>`, { extra: ro() ? '' : `<button class="btn sm outline" data-act="addPoc">${I.plus} Add Another POC</button>`, bad: errIn('poc') });
+}
+function tabHours() { return card('oh', 'clock', 'Operating Hours', `<p class="help">The hours patients can contact and visit the practice.</p>${hoursRows(v.hours, 'hours')}`, { bad: errIn('hours') }); }
+function tabConfig() {
+  const allGroups = ['Primary Rota Group', 'Extended Hours Group', 'Weekend Cover Group'];
+  const allPractices = ['Barnwell Medical Centre', 'Brookfield Medical Centre', 'Cedar Lane Medical Centre'];
+  const chipsField = (label, list, all, path) => `<div class="f"><label>${label}</label><div class="chips">${list.map((c, i) => `<span class="chip">${esc(c)}${ro() ? '' : `<button aria-label="Remove ${esc(c)}" data-act="rmChip" data-path="${path}" data-i="${i}">${I.x}</button>`}</span>`).join('')}${ro() ? '' : `<select aria-label="Add to ${label}" data-act="addChip" data-path="${path}"><option value="">${list.length ? 'Add another' : 'Select'}…</option>${all.filter(a => !list.includes(a)).map(a => `<option>${esc(a)}</option>`).join('')}</select>`}</div></div>`;
+  const tags = { opt: ' <small>(Optional)</small>', mand: ' <small class="mand">(Mandatory)</small>' };
+  return `<div class="stack">
+  ${card('rg', '', 'Rota groups', `<p class="help">Select one or more rota groups to associate with.</p>${chipsField('Select Rota Group(s)', v.rotaGroups, allGroups, 'rotaGroups')}`, { tag: tags.opt })}
+  ${card('lp', '', 'Linked Practices', `<p class="help">Select one or more practices from dropdown to link as a site.</p>${chipsField('Select Practice(s)', v.linked, allPractices, 'linked')}`, { tag: tags.opt })}
+  ${card('sd', '', 'Practice Succession Date', `<div class="grid" style="align-items:center">${input('startDate', 'Start Date', v.startDate, { req: true, type: 'date' })}<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" ${v.ongoing ? 'checked' : ''} data-path="ongoing" style="accent-color:var(--primary);width:18px;height:18px" ${ro() ? 'disabled' : ''}> Ongoing</label>${v.ongoing ? '' : input('endDate', 'End Date', v.endDate || '', { type: 'date' })}</div>`, { bad: errIn('startDate') })}
+  ${card('wf', '', 'Workforce Allocation Configuration', `<div class="stack">${v.workforce.map((w, i) => `<div class="sub-card"><div class="between" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><b style="font-weight:600;font-size:13px">Workforce Allocation ${i + 1}</b>${ro() ? '' : `<button class="del" data-act="rmRow" data-path="workforce" data-i="${i}" aria-label="Remove allocation">${I.trash}</button>`}</div><div class="row3">${select(`wf${i}t`, 'Staff Type', w.type, ['GP', 'Nurse', 'Pharmacist', 'Care Navigator'], `workforce.${i}.type`, { req: true })}${select(`wf${i}f`, 'Frequency', w.freq, ['Daily', 'Weekly', 'Monthly'], `workforce.${i}.freq`, { req: true })}${input(`workforce${i}`, 'Hours', w.hours, { req: true, type: 'number', path: `workforce.${i}.hours`, ph: 'e.g., 8.00' })}</div></div>`).join('')}${ro() ? '' : `<button class="btn ghost" data-act="addRow" data-path="workforce">${I.plus} Add hours for another staff type</button>`}</div>`, { tag: tags.opt, bad: errIn('workforce') })}
+  ${card('at', '', 'Appointment Type Configuration', `<div class="stack" style="gap:10px"><div class="alert warn">${I.alert}<div>Only enabled appointment types will be available for booking. You must configure at least one appointment type as default.</div></div>${Object.entries(v.atypes).map(([k, on]) => `<div class="atype"><label><input type="checkbox" ${on ? 'checked' : ''} data-path="atypes.${k}" ${ro() ? 'disabled' : ''}> ${esc(k)}</label>${k === 'Admin Work' ? '' : `<button class="def ${v.defaultType === k ? 'on' : ''}" data-act="def" data-k="${esc(k)}" ${!on || ro() ? 'disabled' : ''}>${v.defaultType === k ? 'Default' : 'Set as Default'}</button>`}</div>`).join('')}${shown('atypes') ? `<span style="color:var(--error);font-size:12px">${esc(U.errors.atypes)}</span>` : ''}</div>`, { tag: tags.mand, bad: errIn('atypes') })}
+  ${card('sl', '', 'Slot Duration Configuration', `<div class="stack">${v.slots.map((s, i) => `<div class="sub-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><b style="font-weight:600;font-size:13px">Slot Duration ${i + 1}</b>${ro() || v.slots.length < 2 ? '' : `<button class="del" data-act="rmRow" data-path="slots" data-i="${i}" aria-label="Remove slot duration">${I.trash}</button>`}</div><div class="row3">${select(`sl${i}r`, 'Role', s.role, ['Clinician', 'GP', 'Nurse', 'Pharmacist'], `slots.${i}.role`, { req: true })}${select(`sl${i}t`, 'Appointment Type', s.type, Object.keys(v.atypes).filter(k => k !== 'Admin Work'), `slots.${i}.type`, { req: true })}${input(`slots${i}`, 'Duration (minutes)', s.mins, { req: true, type: 'number', path: `slots.${i}.mins`, ph: 'e.g. 15', help: 'In minutes' })}</div></div>`).join('')}${ro() ? '' : `<button class="btn ghost" data-act="addRow" data-path="slots">${I.plus} Add another slot duration configuration</button>`}</div>`, { bad: errIn('slots') })}
+  ${card('bk', '', 'Appointment Booking Configuration', `<div class="grid">${select('urgent', 'Urgent', v.urgent, ['Both', 'Online only', 'Practice only'], 'urgent')}${select('routine', 'Routine', v.routine, ['Both', 'Online only', 'Practice only'], 'routine')}</div>`)}
+  ${card('uc', '', 'Urgent Capacity Threshold', `${hoursRows(v.capacity, 'capacity')}<div style="margin-top:18px">${select('extra', 'Extra appointments', v.extra, ['Signposting to Pharmacy', 'Signposting to NHS 111', 'Add to waiting list'], 'extra')}</div>`, { bad: errIn('cap') })}
+  </div>`;
+}
+
+/* Render */
+const TABS = [['details', 'Practice Details'], ['contacts', 'Point of Contact'], ['hours', 'Operating Hours'], ['config', 'Practice Configuration']];
+function render() {
+  const keepFocus = document.activeElement && document.activeElement.id;
+  const role = U.role === 'pm' ? ['Nadia Holloway', 'Practice Manager', 'NH'] : ['Dr Hannah Whitcombe', 'GP', 'HW'];
+  const body = { details: tabDetails, contacts: tabContacts, hours: tabHours, config: tabConfig }[U.tab]();
+  document.getElementById('root').innerHTML = `
+  <div class="proto" role="region" aria-label="Prototype controls"><b>Prototype · Settings → Practice Profile</b><span class="lbl">View as</span><button aria-pressed="${U.role === 'pm'}" data-act="role" data-v="pm">Practice Manager (can edit)</button><button aria-pressed="${U.role === 'gp'}" data-act="role" data-v="gp">GP (view only)</button><span class="sp"></span><button data-act="reset">Reset</button></div>
+  <div class="app">
+    <header class="top"><nav class="crumbs" aria-label="Breadcrumb"><span>Dashboard</span>${I.chev}<span>Settings</span>${I.chev}<b>Practice Profile</b></nav><div class="search">${I.search} Search practices, ODS code or town… <kbd>⌘K</kbd></div><button class="iconbtn" aria-label="Notifications">${I.bell}</button><div class="who"><span class="av">${role[2]}</span><span><span class="n">${role[0]}</span><span class="p"><i>● Ashford Medical Centre</i>${role[1]}</span></span></div></header>
+    <div class="layout">
+      <aside class="side"><div class="logo">aqlios <small>Public<br>Practice</small></div><nav aria-label="Main navigation"><div class="sec">Overview</div><a href="#">${I.grid}Dashboard</a><div class="sec">EHR</div><a href="#">Patients</a><a href="#">Tickets</a><a href="#">Appointment</a><a href="#">Documents</a><a href="#">Call Recall</a><div class="sec">HRM</div><a href="#">Staff on-boarding</a><a href="#">ROTA Management</a><a href="#">Leaves</a><hr><a href="#">${I.bell}Notifications</a><a href="#" class="on" aria-current="page">${I.set}Settings</a></nav><div class="me"><span class="av" style="width:36px;height:36px">${role[2]}</span><div><b style="font-weight:600;font-size:13px">${role[0]}</b><small>${role[1]}</small></div></div></aside>
+      <main class="panel">
+        <nav class="setnav" aria-label="Settings sections"><a href="#">Appointment Configuration</a><a href="#">Competency</a><a href="#">Pathway Configuration</a><a href="#" class="on" aria-current="page">Practice Profile</a><a href="#">Templates</a></nav>
+        <section class="content" aria-labelledby="ttl">
+          <div class="head"><div><h2 id="ttl">Practice Profile</h2><p>Your practice’s details, contacts, opening hours and configuration.</p></div>${ro() ? '' : `<div class="acts"><button class="btn" data-act="cancel" ${dirty() ? '' : 'disabled'}>Cancel</button><button class="btn primary" data-act="save">Save Changes</button></div>`}</div>
+          <div class="meta">${I.info}<span>Set up during onboarding by the Aqlios admin on 27/10/2026${U.lastSaved ? ` · last updated ${U.lastSaved}` : ''}. Changes here also update the practice in Practice Management.</span>${dirty() && !ro() ? '<span class="dirty">Unsaved changes</span>' : ''}</div>
+          ${ro() ? `<div class="ro-banner">${I.lock}<span>You can view the practice profile. Only the practice manager can change it.</span></div>` : ''}
+          <div class="ptabs" role="tablist" aria-label="Practice Profile">${TABS.map(([k, l]) => `<button role="tab" id="tab-${k}" aria-selected="${U.tab === k}" aria-controls="tp" data-act="tab" data-v="${k}">${l}${tabHasError(k) ? '<span class="dot" aria-label="has errors"></span>' : ''}</button>`).join('')}</div>
+          <div id="tp" role="tabpanel" aria-labelledby="tab-${U.tab}">${body}</div>
+          <div class="notes"><b>About this draft</b><ul><li>Fields and rules are the same as Onboard New Practice and the super-admin’s practice profile. The ODS search isn’t shown, because the practice already exists.</li><li>Practice Manager and Practice Type are view only here. The Aqlios admin assigns the manager.</li><li>Unsaved edits stay when you switch tabs. Save Changes saves all four tabs; a tab with an error gets a red dot, and the page opens the first one.</li><li>Sample data: Ashford Medical Centre from the local demo build. Optional fields left blank at onboarding are filled with fictional examples.</li></ul></div>
+        </section>
+      </main>
+    </div>
+  </div>${U.toast ? `<div class="toast ${U.toast.err ? 'err' : ''}" role="status">${U.toast.err ? I.alert : I.check}${esc(U.toast.text)}</div>` : ''}`;
+  if (keepFocus) { const el = document.getElementById(keepFocus); if (el && el.tagName !== 'BUTTON') { el.focus(); if (el.setSelectionRange && el.type !== 'email' && el.type !== 'number' && el.type !== 'date' && el.type !== 'time') try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } }
+}
+function toast(text, err) { U.toast = { text, err }; clearTimeout(toast.t); toast.t = setTimeout(() => { U.toast = null; render(); }, 3000); }
+function setPath(path, value) { const parts = path.split('.'); let o = v; while (parts.length > 1) { const p = parts.shift(); o = o[p]; } o[parts[0]] = value; }
+
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('[data-toggle]');
+  if (t && !ev.target.closest('button')) { U.closed[t.dataset.toggle] = !U.closed[t.dataset.toggle]; render(); return; }
+  const el = ev.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT') return;
+  if (el.tagName === 'A') ev.preventDefault();
+  const d = el.dataset;
+  switch (d.act) {
+    case 'tab': U.tab = d.v; try { history.replaceState(null, '', '?tab=' + d.v); } catch (e) {} break;
+    case 'role': U.role = d.v; break;
+    case 'reset': saved = clone(ONBOARDED); v = clone(ONBOARDED); Object.assign(U, { errors: {}, touched: {}, submitted: false, lastSaved: null }); toast('Reset to the onboarding details'); break;
+    case 'cancel': v = clone(saved); Object.assign(U, { errors: {}, touched: {}, submitted: false }); toast('Changes discarded'); break;
+    case 'save': {
+      U.submitted = true; U.errors = validate();
+      const keys = Object.keys(U.errors);
+      if (keys.length) { const first = TABS.find(([k]) => keys.some(x => TAB_OF(x) === k))[0]; U.tab = first; render(); const f = document.querySelector('.f.bad input, .f.bad textarea, .f.bad select, .day .err'); if (f) (f.focus ? f.focus() : null); toast('Fix the highlighted fields', true); return; }
+      saved = clone(v); U.submitted = false; U.touched = {}; const n = new Date(); U.lastSaved = `${String(n.getDate()).padStart(2, '0')}/${String(n.getMonth() + 1).padStart(2, '0')}/${n.getFullYear()} at ${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`; toast('Practice profile updated successfully'); break;
+    }
+    case 'addPoc': v.pocs.push({ name: '', phone: '', email: '', designation: '', description: '' }); break;
+    case 'delPoc': v.pocs.splice(Number(d.i), 1); break;
+    case 'rmChip': v[d.path].splice(Number(d.i), 1); break;
+    case 'def': v.defaultType = d.k; break;
+    case 'addRow': v[d.path].push(d.path === 'slots' ? { role: 'Clinician', type: 'Face To Face Surgery', mins: '' } : { type: 'Nurse', freq: 'Weekly', hours: '' }); break;
+    case 'rmRow': v[d.path].splice(Number(d.i), 1); break;
+    case 'logo': toast('Logo upload works as in onboarding (JPEG or PNG up to 10MB)'); break;
+    default: return;
+  }
+  if (U.submitted) U.errors = validate();
+  render();
+});
+document.addEventListener('keydown', ev => { const t = ev.target.closest('[data-toggle]'); if (t && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); U.closed[t.dataset.toggle] = !U.closed[t.dataset.toggle]; render(); } });
+document.addEventListener('input', ev => {
+  const el = ev.target; if (!el.dataset.path || el.type === 'checkbox' || el.tagName === 'SELECT') return;
+  setPath(el.dataset.path, el.value);
+  if (el.dataset.count) { const c = document.getElementById(el.dataset.count); if (c) c.textContent = `${el.value.length}/500 characters`; }
+  U.errors = validate();
+  const head = document.querySelector('.head .acts .btn'); if (head) head.disabled = !dirty();
+  const meta = document.querySelector('.meta'); if (meta && !meta.querySelector('.dirty') && dirty()) meta.insertAdjacentHTML('beforeend', '<span class="dirty">Unsaved changes</span>');
+});
+document.addEventListener('change', ev => {
+  const el = ev.target;
+  if (el.dataset.act === 'addChip') { if (el.value) v[el.dataset.path].push(el.value); render(); return; }
+  if (!el.dataset.path) return;
+  // Typed fields are already stored on input; redrawing here would swallow the click that caused the blur.
+  if (el.tagName !== 'SELECT' && el.type !== 'checkbox') return;
+  if (el.type === 'checkbox') { setPath(el.dataset.path, el.checked); if (el.dataset.path.startsWith('atypes.') && !el.checked && v.defaultType === el.dataset.path.slice(7)) { const next = Object.keys(v.atypes).find(k => v.atypes[k] && k !== 'Admin Work'); if (next) v.defaultType = next; } }
+  else setPath(el.dataset.path, el.value);
+  U.errors = validate(); render();
+});
+document.addEventListener('focusout', ev => {
+  const el = ev.target; if (!el.id || !el.dataset || !el.dataset.path) return;
+  U.touched[el.id] = true; U.errors = validate(); markField(el.id);
+});
+/* Show or clear one field's error in place, without redrawing the page (keeps what's being typed elsewhere). */
+function markField(id) {
+  const el = document.getElementById(id); if (!el) return;
+  const box = el.closest('.f'); if (!box) return;
+  const err = U.errors[id]; let msg = box.querySelector('.msg:not(.counter)');
+  box.classList.toggle('bad', !!err); el.setAttribute('aria-invalid', !!err);
+  if (err) { if (!msg) { msg = document.createElement('span'); msg.className = 'msg'; box.appendChild(msg); } msg.textContent = err; }
+  else if (msg && box.dataset.help === undefined) { const help = box.getAttribute('data-helptext'); if (help) msg.innerHTML = help; else msg.remove(); }
+}
+render();
+</script>
+</body>
+</html>
