@@ -1,6 +1,5 @@
 'use client';
 
-import { ComingSoonPlaceholder } from '@/components/feedback/ComingSoonPlaceholder';
 import { SettingsShell } from '@/components/layout/SettingsShell';
 import { PRACTICE_SETTINGS_SECTIONS } from '@/config/practiceSettings';
 import { useCurrentPractice, usePracticeCrumbs, usePracticeHref } from '@/features/practice/PracticeContext';
@@ -8,6 +7,7 @@ import { TemplateLibraryPage } from '@/features/templates/TemplateLibraryPage';
 import { CompetencySection } from './CompetencySection';
 import { GlobalAppointmentConfigSection } from './GlobalAppointmentConfigSection';
 import { PathwaySection } from './PathwaySection';
+import { PracticeProfileSection } from './PracticeProfileSection';
 
 type SectionSlug = (typeof PRACTICE_SETTINGS_SECTIONS)[number]['slug'];
 
@@ -16,7 +16,7 @@ const SUBTITLES: Record<SectionSlug, string | undefined> = {
   'appointment-configuration': 'Manage appointment settings here.',
   competency: 'Manage clinical competency categories and sub-types used for staff assignment and task routing.',
   'pathway-configuration': "Manage this practice's pathway configuration here.",
-  'practice-profile': undefined,
+  'practice-profile': 'Your practice’s details, contacts, opening hours and configuration.',
   templates: 'Manage the message, email and note templates staff use.',
 };
 
@@ -34,28 +34,26 @@ export function PracticeSettingsPage({ section }: { section: string }) {
     { label: current.label },
   ]);
 
+  const shell = {
+    sections: PRACTICE_SETTINGS_SECTIONS.map(({ slug, label }) => ({ key: slug, label })),
+    active: current.slug,
+    hrefFor,
+    title: current.label,
+  };
+
+  // Practice Profile owns its form, so it renders the shell itself (Save Changes sits in the header).
+  if (current.slug === 'practice-profile') {
+    return <PracticeProfileSection key={practice.id} practiceId={practice.id} shell={shell} />;
+  }
+
   return (
-    <SettingsShell
-      sections={PRACTICE_SETTINGS_SECTIONS.map(({ slug, label }) => ({ key: slug, label }))}
-      active={current.slug}
-      hrefFor={hrefFor}
-      title={current.label}
-      subtitle={SUBTITLES[current.slug]}
-    >
+    <SettingsShell {...shell} subtitle={SUBTITLES[current.slug]}>
       {/* Keyed by practice, so switching practice starts the section again. */}
       {current.slug === 'appointment-configuration' && (
         <GlobalAppointmentConfigSection key={practice.id} practiceId={practice.id} />
       )}
       {current.slug === 'competency' && <CompetencySection key={practice.id} practiceId={practice.id} />}
       {current.slug === 'pathway-configuration' && <PathwaySection key={practice.id} practiceId={practice.id} />}
-      {current.slug === 'practice-profile' && (
-        // A placeholder in the live app as well.
-        <ComingSoonPlaceholder
-          title="Practice Profile"
-          size="practice"
-          message="We are currently building the public practice profile management system. Soon you will be able to view and manage your practice profile details here."
-        />
-      )}
       {current.slug === 'templates' && <TemplateLibraryPage embedded />}
     </SettingsShell>
   );

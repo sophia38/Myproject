@@ -53,6 +53,8 @@ export interface AdditionalConfigurationSectionsProps {
   /** Practices that can be linked as sites (all visible practices except this one). */
   practiceOptions: { id: string; practice_name: string }[];
   roles: Role[];
+  /** The "Additional Configuration" divider above the sections (off in Practice Settings, where they have their own tab). */
+  showDivider?: boolean;
 }
 
 /** "Additional Configuration" area of the practice profile (docs/super-admin/04-practice-profile.md). */
@@ -61,6 +63,7 @@ export function AdditionalConfigurationSections({
   currentPracticeId,
   practiceOptions,
   roles,
+  showDivider = true,
 }: AdditionalConfigurationSectionsProps) {
   const formik = useFormikContext<ProfileValues>();
   const { values, setFieldValue, setFieldTouched, submitCount } = formik;
@@ -80,22 +83,24 @@ export function AdditionalConfigurationSections({
 
   return (
     <Stack spacing={2.5}>
-      <Divider sx={{ my: 1 }}>
-        <Box
-          component="span"
-          sx={(theme) => ({
-            px: 2,
-            py: 0.5,
-            borderRadius: `${theme.tokens.radius.pill}px`,
-            bgcolor: theme.tokens.control.sectionDividerPill,
-            color: 'text.secondary',
-            fontSize: 13,
-            fontWeight: 500,
-          })}
-        >
-          Additional Configuration
-        </Box>
-      </Divider>
+      {showDivider && (
+        <Divider sx={{ my: 1 }}>
+          <Box
+            component="span"
+            sx={(theme) => ({
+              px: 2,
+              py: 0.5,
+              borderRadius: `${theme.tokens.radius.pill}px`,
+              bgcolor: theme.tokens.control.sectionDividerPill,
+              color: 'text.secondary',
+              fontSize: 13,
+              fontWeight: 500,
+            })}
+          >
+            Additional Configuration
+          </Box>
+        </Divider>
+      )}
 
       <FormSectionCard
         title={

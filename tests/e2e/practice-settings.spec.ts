@@ -98,7 +98,7 @@ test.describe('practice settings', () => {
     await expect(page.getByRole('switch', { name: 'Mobile App for Medication Query Assessment' })).not.toBeChecked();
   });
 
-  test('templates and the practice profile placeholder', async ({ page }) => {
+  test('templates, then the practice profile', async ({ page }) => {
     await logIn(page, 'practice-user');
     await page.goto(`${SETTINGS}/templates/`);
     await expect(page.getByText('These templates are shared by every practice.', { exact: false })).toBeVisible();
@@ -110,6 +110,35 @@ test.describe('practice settings', () => {
       .getByRole('link', { name: 'Practice Profile' })
       .click();
     await expect(page).toHaveURL(/\/settings\/practice-profile\/?$/);
-    await expect(page.getByText(/building the public practice profile management system/)).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Practice Details' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('practice profile shows the onboarding details in tabs and saves', async ({ page }) => {
+    await logIn(page);
+    await page.goto(`${SETTINGS}/practice-profile/`);
+    await expect(page.getByLabel(/^Practice Name/)).toHaveValue('Ashford Medical Centre');
+    await expect(page.getByLabel(/^PCN Name/)).toHaveValue('Eastside PCN');
+    await expect(page.getByLabel(/^Postcode/)).toHaveValue('LS13 1HQ');
+
+    // An error on another tab sends Save back to that tab, which is marked.
+    await page.getByLabel(/^PCN Name/).fill('');
+    await page.getByRole('tab', { name: 'Operating Hours' }).click();
+    await expect(page).toHaveURL(/tab=hours/);
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await expect(page).toHaveURL(/tab=details/);
+    await expect(page.getByText('PCN name is required')).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Practice Details.*has errors/ })).toBeVisible();
+
+    await page.getByLabel(/^PCN Name/).fill('Eastside PCN North');
+    await page.getByRole('tab', { name: 'Practice Configuration' }).click();
+    await expect(page.getByText('Appointment Type Configuration')).toBeVisible();
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await expect(toast(page, 'Practice profile updated successfully')).toBeVisible();
+
+    // The super-admin's profile shows the same practice record.
+    await page.goto('/verticals/public/hub-management/practices/');
+    await page.getByRole('link', { name: 'View Ashford Medical Centre' }).click();
+    await page.getByText('Practice Details', { exact: true }).first().click();
+    await expect(page.getByLabel(/^PCN Name/)).toHaveValue('Eastside PCN North');
   });
 });

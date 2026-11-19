@@ -18,6 +18,8 @@ export interface SettingsShellProps {
   /** Section title and subtitle at the top of the content card. */
   title: string;
   subtitle?: string;
+  /** Buttons on the right of the title, e.g. Cancel and Save Changes. */
+  actions?: React.ReactNode;
   /** Accessible name of the left nav (default "Settings sections"). */
   navLabel?: string;
   children: React.ReactNode;
@@ -33,6 +35,7 @@ export function SettingsShell({
   hrefFor,
   title,
   subtitle,
+  actions,
   navLabel = 'Settings sections',
   children,
 }: SettingsShellProps) {
@@ -107,14 +110,27 @@ export function SettingsShell({
           p: { xs: 2, md: 3 },
         })}
       >
-        <Typography id="settings-section-title" component="h2" variant="sectionTitle">
-          {title}
-        </Typography>
-        {subtitle && (
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
-            {subtitle}
-          </Typography>
-        )}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'flex-start' },
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Typography id="settings-section-title" component="h2" variant="sectionTitle">
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+          {actions && <Box sx={{ display: 'flex', gap: 1.25, flexShrink: 0, flexWrap: 'wrap' }}>{actions}</Box>}
+        </Box>
         <Box sx={{ mt: 2.5 }}>{children}</Box>
       </Box>
     </Box>
