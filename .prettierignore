@@ -8,3 +8,4 @@ test-results
 package-lock.json
 *.md
 public/mockServiceWorker.js
+public/prototypes
