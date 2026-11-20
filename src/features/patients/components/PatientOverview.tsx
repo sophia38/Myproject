@@ -16,7 +16,7 @@ import { ConsultationList, type ConsultationsState } from './MedicalRequestsPane
 import { MedicationList } from './MedicationList';
 import { ReadOnlyField } from './ReadOnlyField';
 
-export type ProfileTab = 'overview' | 'details' | 'carer' | 'contact' | 'requests' | 'notes';
+export type ProfileTab = 'overview' | 'details' | 'carer' | 'contact' | 'requests' | 'health' | 'results' | 'notes';
 
 const RECENT = 3;
 

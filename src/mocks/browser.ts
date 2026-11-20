@@ -2,6 +2,7 @@ import { getResponse } from 'msw';
 import { setupWorker } from 'msw/browser';
 import { appointmentHandlers } from './handlers/appointments';
 import { authHandlers } from './handlers/auth';
+import { clinicalHandlers } from './handlers/clinical';
 import { complianceHandlers } from './handlers/compliance';
 import { cqcHandlers } from './handlers/cqc';
 import { crmHandlers } from './handlers/crm';
@@ -35,6 +36,7 @@ const handlers = [
   ...patientHandlers,
   ...ticketHandlers,
   ...waitlistHandlers,
+  ...clinicalHandlers,
   ...appointmentHandlers,
   ...leaveHandlers,
   ...hrPolicyHandlers,

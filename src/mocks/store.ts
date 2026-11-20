@@ -48,6 +48,7 @@ import type { PracticeSettingsRecord } from './practiceSettingsState';
 import type { LeaveRecord } from './leaveState';
 import type { RotaDemoState } from './rotaState';
 import type { WaitlistRecord } from './waitlistState';
+import type { ClinicalRecord } from './clinicalState';
 import { assignableStaff, buildTickets } from './fixtures/tickets';
 import { buildPermissionCatalog, defaultRolePermissions } from './fixtures/permissions';
 import { buildRoles, buildStaff, PERSONAS, type PersonaId, type StaffMember } from './fixtures/users';
@@ -118,6 +119,8 @@ export interface MockDb {
   practiceSettings: Record<string, PracticeSettingsRecord>;
   /** Practice id → released slots, waiting list and cancel requests, seeded the first time they're read (sprint 16). */
   waitlist: Record<string, WaitlistRecord>;
+  /** Practice id → home visits, test results, health entries and letter requests (sprint 16). */
+  clinical: Record<string, ClinicalRecord>;
 }
 
 function seed(): MockDb {
@@ -169,6 +172,7 @@ function seed(): MockDb {
     cqc: {},
     practiceSettings: {},
     waitlist: {},
+    clinical: {},
     appointmentRequests: buildAppointmentRequests(
       practices.map((practice) => ({
         practice,
@@ -195,6 +199,7 @@ function load(): MockDb {
         cqc: saved.cqc ?? {},
         practiceSettings: saved.practiceSettings ?? {},
         waitlist: saved.waitlist ?? {},
+        clinical: saved.clinical ?? {},
       };
     }
   } catch {

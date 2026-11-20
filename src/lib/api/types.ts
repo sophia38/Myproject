@@ -434,6 +434,8 @@ export interface GlobalAppointmentConfiguration {
   waitlist_two_week_fallback: boolean;
   /** Offers made by care navigators wait for the practice manager's approval (not within 24 hours). */
   waitlist_manager_approval: boolean;
+  /** Clinicians review entries patients add in the app (otherwise they're shown as self-reported). */
+  patient_entries_need_review: boolean;
 }
 
 export interface Competency {
@@ -1638,5 +1640,127 @@ export interface CancelRequest {
 export interface CancelRequestListParams {
   page?: number;
   page_size?: number;
+  status?: string;
+}
+
+// ---------- Clinical: home visits, test results, patient health, letters (sprint 16, inferred API) ----------
+
+export type HomeVisitWindow = 'MORNING' | 'AFTERNOON';
+export type HomeVisitStatus = 'BOOKED' | 'COMPLETED';
+
+export interface HomeVisit {
+  id: string;
+  practice_id: string;
+  ticket_id: string | null;
+  patient_id: string;
+  patient_name: string;
+  address: string;
+  clinician: TicketStaff;
+  date: string;
+  window: HomeVisitWindow;
+  reason: string;
+  notes: string;
+  status: HomeVisitStatus;
+  booked_at: string;
+  booked_by: string;
+}
+
+/** A patient asked for a home visit in the app's Get help pathway. */
+export interface HomeVisitRequest {
+  ticket_id: string;
+  patient_id: string;
+  patient_name: string;
+  reason: string;
+  requested_at: string;
+  visit: HomeVisit | null;
+}
+
+export interface HomeVisitListParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  status?: string;
+  staff_id?: string;
+}
+
+export interface HomeVisitSummary {
+  requests_to_book: number;
+  booked: number;
+  completed: number;
+}
+
+export type TestResultOutcome = 'NORMAL' | 'BORDERLINE' | 'FOLLOW_UP';
+export type TestResultStatus = 'PENDING' | 'AWAITING_RELEASE' | 'RELEASED';
+
+export interface TestResult {
+  id: string;
+  practice_id: string;
+  patient_id: string;
+  patient_name: string;
+  name: string;
+  /** GP-ordered, Health check… */
+  source: string;
+  taken_at: string;
+  status: TestResultStatus;
+  outcome: TestResultOutcome | null;
+  values: { name: string; value: string; range: string }[];
+  comment: string | null;
+  released_at: string | null;
+  released_by: string | null;
+}
+
+export interface TestResultListParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  status?: string;
+  outcome?: string;
+}
+
+export type HealthEntryKind = 'CONDITION' | 'ALLERGY' | 'REACTION' | 'VACCINATION';
+
+export interface HealthEntry {
+  id: string;
+  patient_id: string;
+  kind: HealthEntryKind;
+  name: string;
+  detail: string;
+  severity: 'Mild' | 'Moderate' | 'Severe' | null;
+  /** Vaccinations: date given. Conditions: since. */
+  date: string | null;
+  source: 'GP_RECORD' | 'PATIENT';
+  added_at: string;
+  /** Only with clinician review on: awaiting, added to the record, or dismissed. */
+  review: 'AWAITING' | 'ADDED' | 'DISMISSED' | null;
+  review_reason: string | null;
+}
+
+export interface PatientHealth {
+  review_enabled: boolean;
+  entries: HealthEntry[];
+}
+
+export type LetterStatus = 'SENT' | 'IN_PROGRESS' | 'FEE_TO_CONFIRM' | 'READY' | 'DECLINED';
+
+export interface LetterRequest {
+  id: string;
+  practice_id: string;
+  patient_id: string;
+  patient_name: string;
+  type: string;
+  purpose: string;
+  needed_by: string | null;
+  delivery: 'IN_APP' | 'COLLECT';
+  status: LetterStatus;
+  received_at: string;
+  fee: string | null;
+  file_name: string | null;
+  decline_reason: string | null;
+}
+
+export interface LetterListParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
   status?: string;
 }

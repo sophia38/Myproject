@@ -33,6 +33,7 @@ import { RecommendedStaffCell } from './components/RecommendedStaffCell';
 import { SeverityFlag } from './components/SeverityFlag';
 import { formatDateTime } from './ticketFormat';
 import { ticketPath } from './ticketsRoutes';
+import { HomeVisitMarker, useHomeVisitRequests } from '@/features/clinical/HomeVisitBanner';
 
 type Cases = 'open' | 'closed';
 
@@ -76,6 +77,8 @@ export function TicketListPage() {
 
 function TicketTable({ cases }: { cases: Cases }) {
   const practice = useCurrentPractice();
+  // Sprint 16: consultations where the patient asked for a home visit.
+  const { requests: homeVisits } = useHomeVisitRequests(practice.id);
   const practiceHref = usePracticeHref();
   const { enqueueSnackbar } = useSnackbar();
   const closed = cases === 'closed';
@@ -120,6 +123,7 @@ function TicketTable({ cases }: { cases: Cases }) {
         {ticket.patient_name}
       </Typography>
       <CopyNameButton name={ticket.patient_name} />
+      <HomeVisitMarker request={homeVisits.get(ticket.id)} />
     </Stack>
   );
 

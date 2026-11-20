@@ -24,6 +24,7 @@ import { PUBLIC_SUB_APP_ID } from '@/lib/api/config';
 import { ApiError } from '@/lib/api/http';
 import { formatNhsNumber, patientName, patientsApi, REGISTRATION_TYPE_LABELS } from '@/lib/api/patients';
 import { CancellationMarker } from '@/components/data/CancellationMarker';
+import { PatientHealthPanel, PatientResultsPanel } from '@/features/clinical/PatientClinicalPanels';
 import { useCancellationCounts } from '@/features/appointments/useCancellationCounts';
 import type { PatientDetail } from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
@@ -41,7 +42,7 @@ type LoadState =
 
 const REASON_MAX = 300;
 
-const TABS: ProfileTab[] = ['overview', 'details', 'carer', 'contact', 'requests', 'notes'];
+const TABS: ProfileTab[] = ['overview', 'details', 'carer', 'contact', 'requests', 'health', 'results', 'notes'];
 
 /** `#notes` in the URL opens that tab. */
 function tabFromHash(): ProfileTab {
@@ -254,6 +255,8 @@ function PatientProfile({
               { value: 'carer', label: 'Carer' },
               { value: 'contact', label: 'Contact Patient' },
               { value: 'requests', label: 'Medical Requests', count: requestCount },
+              { value: 'health', label: 'Health' },
+              { value: 'results', label: 'Test Results' },
               { value: 'notes', label: 'Notes', count: patient.notes.length },
             ]}
           />
@@ -293,6 +296,8 @@ function PatientProfile({
               records={patient.health_records}
             />
           )}
+          {tab === 'health' && <PatientHealthPanel practiceId={practice.id} patientId={patient.id} />}
+          {tab === 'results' && <PatientResultsPanel practiceId={practice.id} patientId={patient.id} />}
           {tab === 'notes' && (
             <PatientNotesCard
               practiceId={practice.id}

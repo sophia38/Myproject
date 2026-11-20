@@ -30,6 +30,7 @@ import { APPOINTMENT_PATH } from '@/features/appointments/appointmentRoutes';
 import { useCurrentPractice, usePracticeCrumbs, usePracticeHref } from '@/features/practice/PracticeContext';
 import { PUBLIC_SUB_APP_ID } from '@/lib/api/config';
 import { isClosed, TICKET_STATUS_LABELS, TICKET_URGENCY_LABELS, ticketsApi } from '@/lib/api/tickets';
+import { HomeVisitBanner } from '@/features/clinical/HomeVisitBanner';
 import { AssignStaffCard } from './components/AssignStaffCard';
 import { ChatCard } from './components/ChatCard';
 import { ClinicalNotesCard } from './components/ClinicalNotesCard';
@@ -278,6 +279,12 @@ export function ConsultationDetailsPage({
           </Alert>
         )
       )}
+      <HomeVisitBanner
+        practiceId={practice.id}
+        ticketId={ticket.id}
+        preferred={ticket.assigned_staff ?? ticket.recommended_staff}
+        readOnly={closed}
+      />
       {wide ? (
         <Grid container spacing={2.5}>
           <Grid size={7}>

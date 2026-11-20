@@ -446,6 +446,14 @@ function AppointmentConfigFields() {
         </Stack>
       </FormSectionCard>
 
+      <FormSectionCard title="Patient-Added Health Entries">
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Conditions, allergies and vaccinations patients add in the app. Off: they show on the patient profile as
+          self-reported. On: a clinician adds each one to the GP record or dismisses it.
+        </Typography>
+        {checkbox('patient_entries_need_review', 'Clinicians review entries patients add')}
+      </FormSectionCard>
+
       <FormSectionCard
         title="Appointment Booking Configuration"
         hasError={Boolean(errorOf('max_advance_booking_days'))}

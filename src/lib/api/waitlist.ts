@@ -34,6 +34,7 @@ export type WaitlistSettings = Pick<
   | 'waitlist_first_to_accept_count'
   | 'waitlist_two_week_fallback'
   | 'waitlist_manager_approval'
+  | 'patient_entries_need_review'
 >;
 
 /** Defaults agreed on 15/11/2026: amber at 3 and red at 6 in 6 months; offers held 2 hours. */
@@ -45,6 +46,8 @@ export const WAITLIST_SETTINGS_DEFAULTS: WaitlistSettings = {
   waitlist_first_to_accept_count: 3,
   waitlist_two_week_fallback: true,
   waitlist_manager_approval: true,
+  // 15/11/2026: patient-added entries are self-reported; review stays off unless the practice turns it on.
+  patient_entries_need_review: false,
 };
 
 export const waitlistApi = {

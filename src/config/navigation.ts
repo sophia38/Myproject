@@ -8,6 +8,9 @@ import ContactPhoneOutlined from '@mui/icons-material/ContactPhoneOutlined';
 import DescriptionOutlined from '@mui/icons-material/DescriptionOutlined';
 import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
 import EventNoteOutlined from '@mui/icons-material/EventNoteOutlined';
+import HomeOutlined from '@mui/icons-material/HomeOutlined';
+import MailOutlineOutlined from '@mui/icons-material/MailOutlineOutlined';
+import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import FeedbackOutlined from '@mui/icons-material/FeedbackOutlined';
 import ForumOutlined from '@mui/icons-material/ForumOutlined';
@@ -235,6 +238,16 @@ export const PRACTICE_NAV: NavSection[] = [
         status: 'built',
       },
       { id: 'appointment', label: 'Appointment', icon: EventNoteOutlined, path: '/appointment', status: 'built' },
+      // Sprint 16 clinical pages.
+      { id: 'home-visits', label: 'Home Visits', icon: HomeOutlined, path: '/home-visits', status: 'built' },
+      { id: 'test-results', label: 'Test Results', icon: ScienceOutlined, path: '/test-results', status: 'built' },
+      {
+        id: 'letter-requests',
+        label: 'Letter Requests',
+        icon: MailOutlineOutlined,
+        path: '/letter-requests',
+        status: 'built',
+      },
       {
         id: 'documents',
         label: 'Documents',
