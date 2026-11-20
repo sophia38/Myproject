@@ -26,6 +26,7 @@ import { RepeatableItemCard } from '@/components/forms/RepeatableItemCard';
 import { BOOKING_CHANNELS, EXTRA_APPOINTMENTS } from '@/features/practices/practiceForm';
 import { PUBLIC_SUB_APP_ID } from '@/lib/api/config';
 import { ApiError } from '@/lib/api/http';
+import { WAITLIST_SETTINGS_DEFAULTS } from '@/lib/api/waitlist';
 import { practiceSettingsApi, settingsApi } from '@/lib/api/settings';
 import type {
   AdditionalSlot,
@@ -53,7 +54,15 @@ const SLOT_TYPES: { value: AdditionalSlotType; label: string }[] = [
 ];
 
 type NumberField =
-  'offered_slot_hours' | 'min_cancellation_hours' | 'min_reschedule_hours' | 'max_advance_booking_days';
+  | 'offered_slot_hours'
+  | 'min_cancellation_hours'
+  | 'min_reschedule_hours'
+  | 'max_advance_booking_days'
+  | 'frequent_canceller_warning'
+  | 'frequent_canceller_threshold'
+  | 'frequent_canceller_months'
+  | 'waitlist_hold_hours'
+  | 'waitlist_first_to_accept_count';
 
 /** Number fields are text while editing (digits only) and numbers in the API. */
 type Values = Omit<GlobalAppointmentConfiguration, NumberField> & Record<NumberField, string>;
@@ -63,6 +72,11 @@ const NUMBER_FIELDS: NumberField[] = [
   'min_cancellation_hours',
   'min_reschedule_hours',
   'max_advance_booking_days',
+  'frequent_canceller_warning',
+  'frequent_canceller_threshold',
+  'frequent_canceller_months',
+  'waitlist_hold_hours',
+  'waitlist_first_to_accept_count',
 ];
 
 const toValues = (config: GlobalAppointmentConfiguration): Values => ({
@@ -88,6 +102,18 @@ const schema = Yup.object({
   min_cancellation_hours: inRange(0, 720, 'hours', 'Minimum cancellation notice'),
   min_reschedule_hours: inRange(0, 720, 'hours', 'Minimum reschedule notice'),
   max_advance_booking_days: inRange(1, 365, 'days', 'Max advance booking period'),
+  frequent_canceller_warning: inRange(1, 50, 'cancellations', 'Amber marker'),
+  frequent_canceller_threshold: inRange(2, 50, 'cancellations', 'Red marker').test(
+    'above-warning',
+    'The red marker must start above the amber one',
+    function check(value) {
+      const warning = Number((this.parent as Values).frequent_canceller_warning);
+      return !value || !warning || Number(value) > warning;
+    },
+  ),
+  frequent_canceller_months: inRange(1, 24, 'months', 'Period'),
+  waitlist_hold_hours: inRange(1, 24, 'hours', 'Hold time'),
+  waitlist_first_to_accept_count: inRange(1, 10, 'patients', 'Number of patients'),
   urgent_capacity: Yup.array().test('hours', 'Closing time must be after opening time', (days) =>
     (days as Values['urgent_capacity']).every((day) => !dayError(day)),
   ),
@@ -125,7 +151,8 @@ export function GlobalAppointmentConfigSection({ practiceId }: { practiceId?: st
       : settingsApi.appointmentConfiguration(PUBLIC_SUB_APP_ID, controller.signal)
     )
       .then((result) => {
-        setConfig(result);
+        // Copies saved before sprint 16 have no waitlist settings: use the defaults.
+        setConfig({ ...WAITLIST_SETTINGS_DEFAULTS, ...result });
         setFailed(false);
       })
       .catch(() => {
@@ -348,6 +375,74 @@ function AppointmentConfigFields() {
           {checkbox('notify_staff_on_cancel', 'Notify staff when a client cancels')}
           {checkbox('show_clinician_name', 'Show clinician name to patients')}
           {checkbox('reopen_cancelled_slot', 'Re-open cancelled slot for immediate booking')}
+        </Stack>
+      </FormSectionCard>
+
+      <FormSectionCard
+        title="Frequent Cancellers"
+        hasError={Boolean(
+          errorOf('frequent_canceller_warning') ||
+          errorOf('frequent_canceller_threshold') ||
+          errorOf('frequent_canceller_months'),
+        )}
+      >
+        <Typography variant="body2" sx={{ mb: 2 }}>
+          Staff-only markers on patients who often cancel. They never stop a patient booking.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            {numberField('frequent_canceller_warning', 'Amber marker from', 'cancellations', 'An early warning.')}
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            {numberField(
+              'frequent_canceller_threshold',
+              'Red “Frequent canceller” from',
+              'cancellations',
+              'Must be more than the amber marker.',
+            )}
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            {numberField(
+              'frequent_canceller_months',
+              'Within the last',
+              'months',
+              'Only patient cancellations in this period count.',
+            )}
+          </Grid>
+        </Grid>
+      </FormSectionCard>
+
+      <FormSectionCard
+        title="Waitlist Offers"
+        hasError={Boolean(errorOf('waitlist_hold_hours') || errorOf('waitlist_first_to_accept_count'))}
+      >
+        <Typography variant="body2" sx={{ mb: 2 }}>
+          How slots released by patient cancellations are offered to the waiting list.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            {numberField(
+              'waitlist_hold_hours',
+              'Hold a slot for the offered patient',
+              'Hrs.',
+              `More than 24 hours before the appointment, the slot is held for ${values.waitlist_hold_hours || 0} hours.`,
+            )}
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            {numberField(
+              'waitlist_first_to_accept_count',
+              'Within 24 hours, offer to the first',
+              'patients',
+              'There’s no hold within 24 hours: the first to accept gets it.',
+            )}
+          </Grid>
+        </Grid>
+        <Stack sx={{ mt: 1.5 }}>
+          {checkbox(
+            'waitlist_two_week_fallback',
+            'Suggest the “within 2 weeks” list when nobody is on the 1-week list',
+          )}
+          {checkbox('waitlist_manager_approval', 'Practice manager approves offers before they go to the patient')}
         </Stack>
       </FormSectionCard>
 

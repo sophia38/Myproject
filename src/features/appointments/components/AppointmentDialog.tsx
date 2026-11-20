@@ -8,6 +8,12 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import Dialog from '@mui/material/Dialog';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormLabel from '@mui/material/FormLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -33,7 +39,7 @@ import {
   isBookable,
 } from '@/lib/api/appointments';
 import { PUBLIC_SUB_APP_ID } from '@/lib/api/config';
-import type { Appointment } from '@/lib/api/types';
+import type { Appointment, CancelledBy } from '@/lib/api/types';
 import { formatTimeRange } from '../appointmentFormat';
 import { appointmentConsultationPath } from '../appointmentRoutes';
 
@@ -59,13 +65,20 @@ export function AppointmentDialog({
   const { enqueueSnackbar } = useSnackbar();
   const [action, setAction] = useState<Action | null>(null);
   const [busy, setBusy] = useState(false);
+  // Sprint 16: a patient's own cancellation releases the slot to the waiting list.
+  const [cancelledBy, setCancelledBy] = useState<CancelledBy | null>(null);
 
   const run = async (reason?: string) => {
     if (!appointment || !action) return;
     setBusy(true);
     const toasts: Record<Action, [string, string]> = {
       reschedule: ['Reschedule requested', 'Failed to request a reschedule'],
-      cancel: ['Appointment cancelled', 'Failed to cancel the appointment'],
+      cancel: [
+        cancelledBy === 'PATIENT'
+          ? 'Appointment cancelled. The slot is in Cancelled Appointments'
+          : 'Appointment cancelled',
+        'Failed to cancel the appointment',
+      ],
       complete: ['Appointment marked as completed', 'Failed to update the appointment'],
       dna: ['Appointment marked as DNA', 'Failed to update the appointment'],
     };
@@ -75,7 +88,7 @@ export function AppointmentDialog({
         action === 'reschedule'
           ? await appointmentsApi.reschedule(PUBLIC_SUB_APP_ID, practice.id, id)
           : action === 'cancel'
-            ? await appointmentsApi.cancel(PUBLIC_SUB_APP_ID, practice.id, id, reason ?? '')
+            ? await appointmentsApi.cancel(PUBLIC_SUB_APP_ID, practice.id, id, reason ?? '', cancelledBy ?? 'PRACTICE')
             : action === 'complete'
               ? await appointmentsApi.complete(PUBLIC_SUB_APP_ID, practice.id, id)
               : await appointmentsApi.markDna(PUBLIC_SUB_APP_ID, practice.id, id);
@@ -103,12 +116,32 @@ export function AppointmentDialog({
       confirmButtonText: 'Cancel Appointment',
       cancelButtonText: 'Keep Appointment',
       confirmButtonVariant: 'error',
+      confirmButtonDisabled: cancelledBy === null,
       requireReason: {
         label: 'Reason',
         maxLength: APPOINTMENT_REASON_MAX,
         required: true,
         placeholder: 'Why is this appointment being cancelled?',
       },
+      children: (
+        <FormControl sx={{ mt: 1 }}>
+          <FormLabel id="cancelled-by-label" required sx={{ fontSize: 13 }}>
+            Who asked to cancel?
+          </FormLabel>
+          <RadioGroup
+            aria-labelledby="cancelled-by-label"
+            value={cancelledBy ?? ''}
+            onChange={(event) => setCancelledBy(event.target.value as CancelledBy)}
+          >
+            <FormControlLabel value="PATIENT" control={<Radio size="small" />} label="The patient" />
+            <FormControlLabel value="PRACTICE" control={<Radio size="small" />} label="The practice" />
+          </RadioGroup>
+          <FormHelperText sx={{ mx: 0 }}>
+            A patient cancellation releases the slot to the waiting list and counts towards the frequent-canceller
+            marker.
+          </FormHelperText>
+        </FormControl>
+      ),
     },
     complete: {
       title: 'Mark as Completed',
@@ -227,7 +260,10 @@ export function AppointmentDialog({
                   color="error"
                   startIcon={<DeleteOutline />}
                   disabled={!bookable}
-                  onClick={() => setAction('cancel')}
+                  onClick={() => {
+                    setCancelledBy(null);
+                    setAction('cancel');
+                  }}
                 >
                   Cancel Appointment
                 </Button>

@@ -1,3 +1,4 @@
+import { WAITLIST_SETTINGS_DEFAULTS } from '@/lib/api/waitlist';
 import { http } from 'msw/http';
 import { CRM_API } from '@/lib/api/config';
 import type {
@@ -55,7 +56,7 @@ function presentPathway(practiceId: string, pathway: Pathway): Pathway {
 export const practiceSettingsHandlers = [
   http.get(practicePath('appointment-configuration/'), ({ params }) => {
     const practiceId = String(params.practiceId);
-    return guard(practiceId) ?? ok(practiceSettingsFor(practiceId).appointment);
+    return guard(practiceId) ?? ok({ ...WAITLIST_SETTINGS_DEFAULTS, ...practiceSettingsFor(practiceId).appointment });
   }),
 
   http.put(practicePath('appointment-configuration/'), async ({ request, params }) => {

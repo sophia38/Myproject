@@ -11,6 +11,7 @@ import type {
   AppointmentSeverity,
   AppointmentStatus,
   AppointmentSummary,
+  CancelledBy,
   Paginated,
 } from './types';
 
@@ -31,10 +32,17 @@ export const appointmentsApi = {
     crmRequest<AppointmentSummary>(`${appointments(subAppId, practiceId)}summary/`, { query: { ...params }, signal }),
   get: (subAppId: string, practiceId: string, appointmentId: string, signal?: AbortSignal) =>
     crmRequest<Appointment>(`${appointments(subAppId, practiceId)}${appointmentId}/`, { signal }),
-  cancel: (subAppId: string, practiceId: string, appointmentId: string, reason: string) =>
+  /** `cancelledBy` PATIENT releases the slot to the waiting list (sprint 16). */
+  cancel: (
+    subAppId: string,
+    practiceId: string,
+    appointmentId: string,
+    reason: string,
+    cancelledBy: CancelledBy = 'PRACTICE',
+  ) =>
     crmRequest<Appointment>(`${appointments(subAppId, practiceId)}${appointmentId}/cancel/`, {
       method: 'POST',
-      body: { reason },
+      body: { reason, cancelled_by: cancelledBy },
     }),
   reschedule: (subAppId: string, practiceId: string, appointmentId: string) =>
     crmRequest<Appointment>(`${appointments(subAppId, practiceId)}${appointmentId}/reschedule/`, { method: 'POST' }),

@@ -23,6 +23,8 @@ import { useCurrentPractice, usePracticeCrumbs, usePracticeHref } from '@/featur
 import { PUBLIC_SUB_APP_ID } from '@/lib/api/config';
 import { ApiError } from '@/lib/api/http';
 import { formatNhsNumber, patientName, patientsApi, REGISTRATION_TYPE_LABELS } from '@/lib/api/patients';
+import { CancellationMarker } from '@/components/data/CancellationMarker';
+import { useCancellationCounts } from '@/features/appointments/useCancellationCounts';
 import type { PatientDetail } from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
 import { CarerInformationCard } from './components/CarerInformationCard';
@@ -140,6 +142,8 @@ function PatientProfile({
   const [deregistering, setDeregistering] = useState(false);
   const [busy, setBusy] = useState(false);
   const consultations = usePatientConsultations(practice.id, patient.id);
+  // Staff-only frequent-canceller marker (sprint 16).
+  const marker = useCancellationCounts(practice.id)(patient.id);
 
   const name = patientName(patient);
   const readOnly = patient.archived;
@@ -187,6 +191,7 @@ function PatientProfile({
             <StatusChip status={REGISTRATION_TYPE_LABELS[patient.registration_type]} tone="neutral" />
             {patient.carer?.verified && <StatusChip status="Carer Verified" tone="secondary" />}
             {patient.archived && <StatusChip status="Archived" />}
+            {marker && <CancellationMarker {...marker} />}
           </Stack>
         }
         actions={

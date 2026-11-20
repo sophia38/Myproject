@@ -57,7 +57,8 @@ test.describe('appointment', () => {
     await page.getByRole('tab', { name: 'Table View' }).click();
     await expect(page).toHaveURL(/view=table/);
     await expect(page.getByText('Upcoming Appointments')).toBeVisible();
-    await expect(page.getByText('Cancelled Appointments')).toBeVisible();
+    // The stat card (the Appointment page also has a Cancelled Appointments tab).
+    await expect(page.getByText('Cancelled Appointments', { exact: true }).last()).toBeVisible();
     const rows = (await table(page).getByRole('row').all()).slice(1);
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
@@ -95,6 +96,9 @@ test.describe('appointment', () => {
     const submit = cancel.getByRole('button', { name: 'Cancel Appointment' });
     await expect(submit).toBeDisabled();
     await cancel.getByRole('textbox', { name: 'Reason' }).fill('Patient asked to cancel by phone.');
+    // Who asked must be chosen (sprint 16); the practice's own cancellation doesn't release the slot.
+    await expect(submit).toBeDisabled();
+    await cancel.getByRole('radio', { name: 'The practice' }).check();
     await submit.click();
     await expect(page.getByText('Appointment cancelled', { exact: true })).toBeVisible();
     await expect(dialog).toContainText('Cancelled by Staff');

@@ -421,6 +421,19 @@ export interface GlobalAppointmentConfiguration {
   urgent_capacity: DaySchedule[];
   extra_appointments: ExtraAppointments;
   additional_slots: AdditionalSlot[];
+  /** Frequent cancellers (sprint 16): amber marker from this many patient cancellations in the period. */
+  frequent_canceller_warning: number;
+  /** Red "Frequent canceller" marker from this many. */
+  frequent_canceller_threshold: number;
+  frequent_canceller_months: number;
+  /** Waitlist offers: hours a released slot is held for the offered patient (more than 24 h before it). */
+  waitlist_hold_hours: number;
+  /** Within 24 hours: how many patients in line get the offer; the first to accept gets it. */
+  waitlist_first_to_accept_count: number;
+  /** Suggest the "within 2 weeks" list when nobody is on the "within 1 week" list. */
+  waitlist_two_week_fallback: boolean;
+  /** Offers made by care navigators wait for the practice manager's approval (not within 24 hours). */
+  waitlist_manager_approval: boolean;
 }
 
 export interface Competency {
@@ -1506,4 +1519,124 @@ export interface HrAnswer {
   found: boolean;
   answer: string;
   sources: HrAnswerSource[];
+}
+
+// ---------- Cancellations and waiting list (sprint 16, inferred API) ----------
+
+export type ReleasedSlotStatus =
+  'NEEDS_OFFER' | 'AWAITING_APPROVAL' | 'OFFERED' | 'FIRST_TO_ACCEPT' | 'BOOKED' | 'NOT_FILLED';
+export type SlotOfferState = 'OPEN' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'TAKEN';
+export type CancelledBy = 'PATIENT' | 'PRACTICE';
+export type WaitlistWindow = 'ONE_WEEK' | 'TWO_WEEKS';
+export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'BOOKED';
+
+export interface SlotOffer {
+  patient_id: string;
+  patient_name: string;
+  offered_at: string;
+  /** Null when offered within 24 hours (no hold: the first to accept gets it). */
+  hold_until: string | null;
+  state: SlotOfferState;
+}
+
+export interface SlotHistoryEntry {
+  at: string;
+  by: string;
+  text: string;
+}
+
+/** A slot released by a patient cancellation, to be offered to the waiting list. */
+export interface ReleasedSlot {
+  id: string;
+  practice_id: string;
+  appointment_id: string;
+  patient_id: string;
+  patient_name: string;
+  /** The cancelling patient's cancellations in the frequent-canceller period. */
+  cancellation_count: number;
+  request_name: string;
+  staff: TicketStaff;
+  type: AppointmentKind;
+  date: string;
+  start_time: string;
+  end_time: string;
+  cancelled_at: string;
+  cancelled_by: CancelledBy;
+  /** How the cancellation arrived. */
+  source: 'STAFF' | 'REMINDER_REPLY';
+  reason: string | null;
+  status: ReleasedSlotStatus;
+  /** Less than 24 hours before the appointment: no hold, first to accept. */
+  within_24h: boolean;
+  offers: SlotOffer[];
+  pending_decision: { type: 'OFFER' | 'BOOK'; patient_id: string; patient_name: string; by: string; at: string } | null;
+  booked_patient_name: string | null;
+  /** First suggested patient, for the table. */
+  next_in_line: string | null;
+  history: SlotHistoryEntry[];
+}
+
+export interface ReleasedSlotListParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  staff_id?: string;
+  status?: string;
+}
+
+export interface ReleasedSlotSummary {
+  released_this_week: number;
+  needs_offer: number;
+  awaiting_approval: number;
+  offers_held: number;
+  first_to_accept: number;
+  refilled: number;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  practice_id: string;
+  patient_id: string;
+  patient_name: string;
+  cancellation_count: number;
+  window: WaitlistWindow;
+  reason: string;
+  added_at: string;
+  due_by: string;
+  status: WaitlistStatus;
+}
+
+/** A waiting patient suggested for a slot; `fallback` when taken from the 2-week list. */
+export interface SlotSuggestion extends WaitlistEntry {
+  fallback: boolean;
+}
+
+export interface WaitlistListParams {
+  page?: number;
+  page_size?: number;
+  search?: string;
+  window?: string;
+  status?: string;
+}
+
+export interface CancelRequest {
+  id: string;
+  practice_id: string;
+  appointment_id: string;
+  patient_id: string;
+  patient_name: string;
+  cancellation_count: number;
+  staff_name: string;
+  request_name: string;
+  date: string;
+  start_time: string;
+  received_at: string;
+  message: string;
+  status: 'NEW' | 'CANCELLED' | 'KEPT';
+}
+
+export interface CancelRequestListParams {
+  page?: number;
+  page_size?: number;
+  status?: string;
 }

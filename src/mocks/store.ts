@@ -47,6 +47,7 @@ import type { HrPolicyRecord } from './hrPolicyState';
 import type { PracticeSettingsRecord } from './practiceSettingsState';
 import type { LeaveRecord } from './leaveState';
 import type { RotaDemoState } from './rotaState';
+import type { WaitlistRecord } from './waitlistState';
 import { assignableStaff, buildTickets } from './fixtures/tickets';
 import { buildPermissionCatalog, defaultRolePermissions } from './fixtures/permissions';
 import { buildRoles, buildStaff, PERSONAS, type PersonaId, type StaffMember } from './fixtures/users';
@@ -81,7 +82,21 @@ export interface MockDb {
   /** Ticket id → log entries, newest first. */
   ticketLogs: Record<string, TicketLog[]>;
   /** `{practiceId}:{appointmentId}` → a change made in the demo (appointments themselves are worked out per day). */
-  appointmentChanges: Record<string, { status: AppointmentStatus; reason: string | null }>;
+  appointmentChanges: Record<
+    string,
+    {
+      status: AppointmentStatus;
+      reason: string | null;
+      /** Set when a released slot is booked for a waiting patient (sprint 16). */
+      rebooked?: {
+        patient_id: string;
+        patient_name: string;
+        patient_phone: string;
+        patient_email: string;
+        request_name: string;
+      };
+    }
+  >;
   appointmentRequests: AppointmentRequest[];
   /** Staff-list people who aren't users elsewhere in the demo (fictional invites), plus new invites and imports. */
   staffSeeds: StaffSeed[];
@@ -101,6 +116,8 @@ export interface MockDb {
   cqc: Record<string, CqcRecord>;
   /** Practice id → its Settings (appointment configuration, own competencies, pathway overrides), created when first read (phase 5). */
   practiceSettings: Record<string, PracticeSettingsRecord>;
+  /** Practice id → released slots, waiting list and cancel requests, seeded the first time they're read (sprint 16). */
+  waitlist: Record<string, WaitlistRecord>;
 }
 
 function seed(): MockDb {
@@ -151,6 +168,7 @@ function seed(): MockDb {
     hrPolicies: {},
     cqc: {},
     practiceSettings: {},
+    waitlist: {},
     appointmentRequests: buildAppointmentRequests(
       practices.map((practice) => ({
         practice,
@@ -176,6 +194,7 @@ function load(): MockDb {
         hrPolicies: saved.hrPolicies ?? {},
         cqc: saved.cqc ?? {},
         practiceSettings: saved.practiceSettings ?? {},
+        waitlist: saved.waitlist ?? {},
       };
     }
   } catch {

@@ -1,3 +1,4 @@
+import { WAITLIST_SETTINGS_DEFAULTS } from '@/lib/api/waitlist';
 import { http } from 'msw/http';
 import { CRM_API } from '@/lib/api/config';
 import type {
@@ -55,6 +56,9 @@ export function appointmentProblem(input: GlobalAppointmentConfiguration) {
     return 'Enter a number of days from 1 to 365';
   }
   if (badHours(input.urgent_capacity)) return 'Closing time must be after opening time';
+  if (input.frequent_canceller_threshold <= input.frequent_canceller_warning) {
+    return 'The red marker must start above the amber one';
+  }
   return null;
 }
 
@@ -74,7 +78,10 @@ export const settingsHandlers = [
     return ok(input, 'Global practice configuration updated successfully');
   }),
 
-  http.get(settings('global-appointment-configuration/'), () => guard() ?? ok(getDb().globalAppointmentConfig)),
+  http.get(
+    settings('global-appointment-configuration/'),
+    () => guard() ?? ok({ ...WAITLIST_SETTINGS_DEFAULTS, ...getDb().globalAppointmentConfig }),
+  ),
 
   http.put(settings('global-appointment-configuration/'), async ({ request }) => {
     const denied = guard();

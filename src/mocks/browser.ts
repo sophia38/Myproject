@@ -18,6 +18,7 @@ import { settingsHandlers } from './handlers/settings';
 import { staffHandlers } from './handlers/staff';
 import { templateHandlers } from './handlers/templates';
 import { ticketHandlers } from './handlers/tickets';
+import { waitlistHandlers } from './handlers/waitlist';
 
 const handlers = [
   ...failureHandlers,
@@ -33,6 +34,7 @@ const handlers = [
   ...cqcHandlers,
   ...patientHandlers,
   ...ticketHandlers,
+  ...waitlistHandlers,
   ...appointmentHandlers,
   ...leaveHandlers,
   ...hrPolicyHandlers,

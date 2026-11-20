@@ -26,11 +26,31 @@ import { usePagedList, type PagedFetcher } from '@/lib/usePagedList';
 import { CarerInfoTooltip } from './components/CarerInfoTooltip';
 import { RegistrationStatusIcon } from './components/RegistrationStatusIcon';
 import { patientPath } from './patientsRoutes';
+import { CancellationMarker } from '@/components/data/CancellationMarker';
+import { useCancellationCounts } from '@/features/appointments/useCancellationCounts';
+
+function PatientMarker({
+  markerFor,
+  patientId,
+}: {
+  markerFor: ReturnType<typeof useCancellationCounts>;
+  patientId: string;
+}) {
+  const marker = markerFor(patientId);
+  if (!marker || marker.count < marker.warning) return null;
+  return (
+    <Box sx={{ mt: 0.5 }}>
+      <CancellationMarker {...marker} />
+    </Box>
+  );
+}
 
 /** Patient Management list (docs/practice/01-patients.md §1). Follows the Practice Management list. */
 export function PatientListPage() {
   const theme = useTheme();
   const practice = useCurrentPractice();
+  // Staff-only frequent-canceller markers (sprint 16).
+  const markerFor = useCancellationCounts(practice.id);
   const practiceHref = usePracticeHref();
   const { enqueueSnackbar } = useSnackbar();
   usePracticeCrumbs([{ label: 'Patient Management' }]);
@@ -79,6 +99,7 @@ export function PatientListPage() {
         <Box sx={{ whiteSpace: 'nowrap' }}>
           <Typography sx={{ fontSize: 14, fontWeight: 500, color: 'text.primary' }}>{patientName(patient)}</Typography>
           <Typography variant="caption">NHS: {formatNhsNumber(patient.nhs_number)}</Typography>
+          <PatientMarker markerFor={markerFor} patientId={patient.id} />
         </Box>
       ),
     },

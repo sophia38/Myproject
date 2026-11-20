@@ -2,15 +2,10 @@ import dayjs from 'dayjs';
 import { http } from 'msw/http';
 import { APPOINTMENT_REASON_MAX } from '@/lib/api/appointments';
 import { CRM_API } from '@/lib/api/config';
-import type { Appointment, AppointmentRequest, AppointmentStatus } from '@/lib/api/types';
-import {
-  appointmentsOn,
-  clockStatus,
-  dateOfAppointmentId,
-  type AppointmentContext,
-  type AppointmentSeed,
-} from '../fixtures/appointments';
-import { assignableStaff } from '../fixtures/tickets';
+import type { AppointmentRequest, AppointmentStatus, CancelledBy } from '@/lib/api/types';
+import { appointmentsOn, type AppointmentSeed } from '../fixtures/appointments';
+import { change, contextFor, findAppointment, present } from '../appointmentState';
+import { releaseSlot } from '../waitlistState';
 import { currentPersona, getDb, saveDb, visiblePractices } from '../store';
 import { fail, forbidden, ok, order, paginate, unauthorized } from '../respond';
 
@@ -24,29 +19,6 @@ function guard(practiceId: string) {
   if (!getDb().session.signedIn) return unauthorized();
   if (!visiblePractices().some((practice) => practice.id === practiceId)) return forbidden();
   return null;
-}
-
-function contextFor(practiceId: string): AppointmentContext | null {
-  const db = getDb();
-  const practice = db.practices.find((item) => item.id === practiceId);
-  if (!practice) return null;
-  return {
-    practice,
-    tickets: db.tickets.filter((ticket) => ticket.practice_id === practiceId),
-    patients: new Map(db.patients.filter((item) => item.practice_id === practiceId).map((item) => [item.id, item])),
-    staff: assignableStaff(db.staff, db.roles, practiceId),
-  };
-}
-
-const changeKey = (practiceId: string, appointmentId: string) => `${practiceId}:${appointmentId}`;
-
-/** The appointment as shown: the clock status, unless it was changed in the demo. */
-function present(seed: AppointmentSeed): Appointment {
-  const rest: Omit<AppointmentSeed, 'seeded_status'> & { seeded_status?: unknown } = { ...seed };
-  delete rest.seeded_status;
-  const change = getDb().appointmentChanges[changeKey(seed.practice_id, seed.id)];
-  if (!change) return { ...rest, status: clockStatus(seed) };
-  return { ...rest, status: change.status, cancellation_reason: change.reason ?? rest.cancellation_reason };
 }
 
 /** The days a list covers: the week from `week_start`, or one `date` (default today). */
@@ -82,20 +54,6 @@ function filtered(practiceId: string, query: URLSearchParams, withStatus: boolea
         (digits !== '' && item.patient_phone.replace(/\s/g, '').includes(digits))
       );
     });
-}
-
-function findAppointment(practiceId: string, appointmentId: string) {
-  const date = dateOfAppointmentId(appointmentId);
-  const context = contextFor(practiceId);
-  if (!date || !context) return null;
-  return appointmentsOn(context, date).find((item) => item.id === appointmentId) ?? null;
-}
-
-/** Saves a change and returns the updated appointment. */
-function change(seed: AppointmentSeed, status: AppointmentStatus, reason: string | null = null) {
-  getDb().appointmentChanges[changeKey(seed.practice_id, seed.id)] = { status, reason };
-  saveDb();
-  return present(seed);
 }
 
 const actorName = () => {
@@ -191,11 +149,19 @@ export const appointmentHandlers = [
       if (current.status !== 'UPCOMING' && current.status !== 'RESCHEDULE_REQUESTED') {
         return fail(400, 'Only upcoming appointments can be cancelled.');
       }
-      const { reason } = (await request.json()) as { reason?: string };
+      const { reason, cancelled_by } = (await request.json()) as { reason?: string; cancelled_by?: CancelledBy };
       const text = String(reason ?? '').trim();
       if (!text) return fail(400, 'Reason is required', [{ field: 'reason', message: 'Reason is required' }]);
       if (text.length > APPOINTMENT_REASON_MAX) {
         return fail(400, `Reason must be ${APPOINTMENT_REASON_MAX} characters or fewer`);
+      }
+      // The patient asked (sprint 16): the slot is released to the waiting list and counts towards the marker.
+      if (cancelled_by === 'PATIENT') {
+        releaseSlot(seed.practice_id, current, 'STAFF', text);
+        return ok(
+          change(seed, 'CANCELLED_BY_PATIENT', text),
+          'Appointment cancelled. The slot is in Cancelled Appointments',
+        );
       }
       return ok(change(seed, 'CANCELLED_BY_STAFF', text), 'Appointment cancelled successfully');
     }),

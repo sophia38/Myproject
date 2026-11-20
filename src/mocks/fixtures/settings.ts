@@ -1,3 +1,4 @@
+import { WAITLIST_SETTINGS_DEFAULTS } from '@/lib/api/waitlist';
 import type {
   Competency,
   DaySchedule,
@@ -82,6 +83,7 @@ export function buildGlobalAppointmentConfiguration(
         end_time: '09:00',
       },
     ],
+    ...WAITLIST_SETTINGS_DEFAULTS,
   };
 }
 
